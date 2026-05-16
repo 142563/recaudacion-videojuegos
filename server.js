@@ -31,6 +31,11 @@ async function initDB() {
   console.log('Base de datos lista.');
 }
 
+// Raíz → página de datos bancarios
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'datos-bancarios.html'));
+});
+
 // GET /api/sesiones — traer todas las sesiones
 app.get('/api/sesiones', async (req, res) => {
   try {
