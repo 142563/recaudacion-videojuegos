@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Datos Bancarios</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a0a00 0%, #3d1c00 40%, #6b3300 70%, #8b4500 100%);
+      font-family: 'Inter', sans-serif;
+      padding: 0;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,160,50,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,120,20,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* ── Layout principal ── */
+    .layout {
+      display: flex;
+      align-items: stretch;
+      gap: 20px;
+      width: 100%;
+      height: 100vh;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    /* ══════════════════════
+       TARJETA PRINCIPAL
+    ══════════════════════ */
+    .card-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,185,80,0.8), transparent);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .card {
+      background: linear-gradient(160deg, #fffbf5 0%, #fff8ed 50%, #fff4e0 100%);
+      border-radius: 24px;
+      padding: 44px 40px;
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.45),
+        0 0 0 1px rgba(255,185,80,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255,160,40,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 5px;
+      background: linear-gradient(180deg, #c8720a, #e8960d, #c8720a);
+      border-radius: 24px 0 0 24px;
+    }
+
+    /* ══════════════════════
+       MÓDULO QR (derecha)
+    ══════════════════════ */
+    .qr-module {
+      width: 200px;
+      flex-shrink: 0;
+      background: linear-gradient(160deg, #fffbf5 0%, #fff8ed 100%);
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(124,58,237,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .qr-module::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 5px;
+      background: linear-gradient(180deg, #7c3aed, #a855f7, #7c3aed);
+      border-radius: 24px 0 0 24px;
+    }
+
+    .qr-module-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+    }
+
+    .qr-module-icon svg {
+      width: 24px; height: 24px;
+      fill: white;
+    }
+
+    .qr-module-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #7c3aed;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .qr-module-sub {
+      font-size: 10px;
+      color: #9060b0;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .qr-box {
+      background: white;
+      border-radius: 14px;
+      padding: 8px;
+      box-shadow:
+        0 4px 16px rgba(124,58,237,0.15),
+        0 0 0 1px rgba(124,58,237,0.15);
+    }
+
+    .qr-scan-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #a855f7;
+      text-align: center;
+    }
+
+    .qr-module-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+      text-align: center;
+    }
+
+    .qr-module-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(124,58,237,0.5);
+    }
+
+    .qr-module-btn svg {
+      width: 14px; height: 14px;
+      fill: white;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════
+       ELEMENTOS INTERNOS
+    ══════════════════════ */
+    .bank-logo-area {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 36px; padding-bottom: 28px;
+      border-bottom: 1px solid rgba(180,100,10,0.15);
+    }
+
+    .logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #c8720a, #e8960d);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(200,114,10,0.35);
+      flex-shrink: 0;
+    }
+
+    .logo-icon svg { width: 28px; height: 28px; fill: white; }
+
+    .bank-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700;
+      color: #7a3d00; line-height: 1.2; letter-spacing: 0.3px;
+    }
+
+    .bank-sub {
+      font-size: 11px; color: #b87030; font-weight: 500;
+      letter-spacing: 2px; text-transform: uppercase; margin-top: 2px;
+    }
+
+    .section-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: #c8820a; margin-bottom: 6px;
+    }
+
+    .data-block { margin-bottom: 26px; }
+
+    .data-value { font-size: 17px; font-weight: 500; color: #2d1500; }
+
+    .data-value.account-number {
+      font-size: 20px; font-weight: 600; letter-spacing: 3px;
+      background: linear-gradient(135deg, #7a3d00, #c8720a);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .data-value.name {
+      font-family: 'Playfair Display', serif;
+      font-size: 21px; font-weight: 600; color: #3d1c00;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(180,100,10,0.2), rgba(180,100,10,0.05));
+      margin: 4px 0 26px 0;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, rgba(200,114,10,0.12), rgba(232,150,13,0.08));
+      border: 1px solid rgba(200,114,10,0.25);
+      border-radius: 20px; padding: 5px 14px 5px 10px;
+      font-size: 13px; font-weight: 500; color: #8b4500;
+    }
+
+    .badge-dot { width: 7px; height: 7px; background: #c8720a; border-radius: 50%; }
+
+    /* WhatsApp */
+    .whatsapp-block { margin-bottom: 26px; }
+
+    .whatsapp-row { display: flex; align-items: center; gap: 16px; }
+
+    .whatsapp-info { flex: 1; }
+
+    .whatsapp-number {
+      font-size: 19px; font-weight: 600; color: #2d1500;
+      letter-spacing: 1.5px; margin-bottom: 8px;
+    }
+
+    .whatsapp-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: linear-gradient(135deg, #25D366, #1ebe5a);
+      color: white; text-decoration: none;
+      border-radius: 20px; padding: 7px 16px 7px 12px;
+      font-size: 13px; font-weight: 600;
+      box-shadow: 0 4px 14px rgba(37,211,102,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .whatsapp-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37,211,102,0.45);
+    }
+
+    .whatsapp-btn svg { width: 17px; height: 17px; fill: white; }
+
+    /* QR interno (WhatsApp) */
+    .qr-wrapper {
+      background: white; border-radius: 14px; padding: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 0 0 1px rgba(180,100,10,0.15);
+      flex-shrink: 0;
+    }
+
+    .qr-label {
+      text-align: center; font-size: 9px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: #c8820a; margin-top: 4px;
+    }
+
+    /* Pie */
+    .footer-note {
+      margin-top: auto; padding-top: 20px;
+      border-top: 1px solid rgba(180,100,10,0.12);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .footer-note svg { width: 15px; height: 15px; fill: #c8820a; opacity: 0.7; flex-shrink: 0; }
+
+    .footer-note span { font-size: 11px; color: #a06030; letter-spacing: 0.3px; }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      body { height: auto; overflow: auto; }
+      .layout { flex-direction: column; align-items: center; height: auto; padding: 16px; }
+      .card-wrapper { width: 100%; flex: none; }
+      .card { height: auto; }
+      .qr-module { width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+
+    <!-- ═══ TARJETA PRINCIPAL ═══ -->
+    <div class="card-wrapper">
+      <div class="card">
+
+        <div class="bank-logo-area">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7h20L12 2zM4 9v9H2v2h20v-2h-2V9H4zm2 0h2v9H6V9zm5 0h2v9h-2V9zm5 0h2v9h-2V9z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="bank-name">Banco G&amp;T Continental</div>
+            <div class="bank-sub">Información de cuenta</div>
+          </div>
+        </div>
+
+        <div class="data-block">
+          <div class="section-label">Titular de la cuenta</div>
+          <div class="data-value name">Daniel André Elis Gálvez</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="data-block">
+          <div class="section-label">Número de cuenta</div>
+          <div class="data-value account-number">07200150892</div>
+        </div>
+
+        <div class="data-block">
+          <div class="section-label">Tipo de cuenta</div>
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Cuenta Monetaria
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="whatsapp-block">
+          <div class="section-label">WhatsApp</div>
+          <div class="whatsapp-row">
+            <div class="whatsapp-info">
+              <div class="whatsapp-number">5569-5580</div>
+              <a class="whatsapp-btn" href="https://wa.me/50255695580" target="_blank">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                </svg>
+                Abrir en WhatsApp
+              </a>
+            </div>
+            <div class="qr-wrapper">
+              <div id="qr-whatsapp"></div>
+              <div class="qr-label">Escanear</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-note">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 1a9 9 0 1 0 0 18A9 9 0 0 0 12 1zm1 13h-2v-5h2v5zm0-7h-2V5h2v2z"/>
+          </svg>
+          <span>Esta información es de carácter confidencial y fue generada para uso personal.</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ MÓDULO QR INSCRIPCIÓN ═══ -->
+    <div class="qr-module">
+      <div class="qr-module-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 6H3a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+        </svg>
+      </div>
+
+      <div class="qr-module-title">Inscripción<br>Videojuegos</div>
+
+      <div class="qr-box">
+        <div id="qr-form"></div>
+      </div>
+
+      <div class="qr-scan-label">Escanear</div>
+
+      <div class="qr-module-sub">¿No estás inscrito? Escanea el QR o toca el botón</div>
+
+      <a class="qr-module-btn" href="https://forms.gle/E3VrFjVXmvX9cdHn7" target="_blank">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 8v-2H7v-2h4v-2l3 3-3 3z"/>
+        </svg>
+        Inscribirme
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    new QRCode(document.getElementById("qr-whatsapp"), {
+      text: "https://wa.me/50255695580",
+      width: 100, height: 100,
+      colorDark: "#3d1c00", colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    new QRCode(document.getElementById("qr-form"), {
+      text: "https://forms.gle/E3VrFjVXmvX9cdHn7",
+      width: 120, height: 120,
+      colorDark: "#7c3aed", colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  </script>
+</body>
+</html>

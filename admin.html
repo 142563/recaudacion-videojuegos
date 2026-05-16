@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Control de Recaudación</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a0a00 0%, #3d1c00 40%, #6b3300 70%, #8b4500 100%);
+      font-family: 'Inter', sans-serif;
+      padding: 20px;
+      color: #2d1500;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,160,50,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,120,20,0.08) 0%, transparent 50%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
+
+    /* ══ HEADER ══ */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 14px; }
+
+    .header-icon {
+      width: 54px; height: 54px;
+      background: linear-gradient(135deg, #c8720a, #e8960d);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(200,114,10,0.4); flex-shrink: 0;
+    }
+
+    .header-icon svg { width: 28px; height: 28px; fill: white; }
+
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px; font-weight: 700; color: #fff8ed; line-height: 1.2;
+    }
+
+    .header-sub {
+      font-size: 11px; color: rgba(255,210,130,0.75);
+      font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;
+    }
+
+    .btn-pdf {
+      display: flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, #c8720a, #e8960d);
+      color: white; border: none; cursor: pointer;
+      border-radius: 14px; padding: 13px 22px;
+      font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+      box-shadow: 0 4px 14px rgba(200,114,10,0.4);
+      touch-action: manipulation;
+    }
+
+    .btn-pdf svg { width: 17px; height: 17px; fill: white; }
+
+    /* ══ STATS ══ */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: linear-gradient(160deg, #fffbf5 0%, #fff8ed 100%);
+      border-radius: 18px; padding: 20px 18px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,185,80,0.2);
+      position: relative; overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: ''; position: absolute;
+      left: 0; top: 0; bottom: 0; width: 4px; border-radius: 18px 0 0 18px;
+    }
+
+    .stat-card.gold::before   { background: linear-gradient(180deg,#c8720a,#e8960d,#c8720a); }
+    .stat-card.green::before  { background: linear-gradient(180deg,#16a34a,#22c55e,#16a34a); }
+    .stat-card.purple::before { background: linear-gradient(180deg,#7c3aed,#a855f7,#7c3aed); }
+
+    .stat-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #c8820a; margin-bottom: 6px;
+    }
+
+    .stat-card.green  .stat-label { color: #16a34a; }
+    .stat-card.purple .stat-label { color: #7c3aed; }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px; font-weight: 700; color: #3d1c00; line-height: 1;
+    }
+
+    .stat-sub { font-size: 10px; color: #9a6030; margin-top: 4px; }
+
+    /* ══ TARJETA PRINCIPAL ══ */
+    .main-card {
+      background: linear-gradient(160deg, #fffbf5 0%, #fff8ed 100%);
+      border-radius: 22px; padding: 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,185,80,0.2);
+      position: relative; overflow: hidden; margin-bottom: 18px;
+    }
+
+    .main-card::before {
+      content: ''; position: absolute;
+      left: 0; top: 0; bottom: 0; width: 5px;
+      background: linear-gradient(180deg,#c8720a,#e8960d,#c8720a);
+      border-radius: 22px 0 0 22px;
+    }
+
+    .card-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: #c8820a;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .card-title svg { width: 14px; height: 14px; fill: #c8820a; }
+
+    /* ══ TABLA EXCEL ══ */
+    .excel-table {
+      width: 100%; border-collapse: collapse;
+    }
+
+    .excel-table thead th {
+      font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #c8820a;
+      padding: 0 8px 14px 8px; text-align: center;
+      border-bottom: 2px solid rgba(200,114,10,0.2);
+    }
+
+    .excel-table thead th:first-child { text-align: left; }
+    .excel-table thead th:last-child  { text-align: right; }
+
+    /* filas del cuerpo */
+    .excel-table tbody tr {
+      border-bottom: 1px solid rgba(180,100,10,0.1);
+      transition: background 0.15s;
+    }
+
+    .excel-table tbody tr:last-child { border-bottom: none; }
+    .excel-table tbody tr:hover { background: rgba(200,114,10,0.03); }
+
+    .excel-table tbody td {
+      padding: 10px 8px; vertical-align: middle;
+    }
+
+    /* Denominación */
+    .td-denom { width: 100px; }
+
+    .denom-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg,rgba(200,114,10,0.13),rgba(232,150,13,0.07));
+      border: 1.5px solid rgba(200,114,10,0.3);
+      border-radius: 12px; padding: 8px 14px;
+      font-weight: 700; font-size: 18px; color: #7a3d00;
+      min-width: 80px; letter-spacing: 0.5px;
+    }
+
+    /* Botones +/- */
+    .td-control { text-align: center; }
+
+    .qty-control {
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+
+    .qty-btn {
+      width: 62px; height: 62px;
+      border-radius: 16px; border: none; cursor: pointer;
+      font-size: 26px; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.1s, opacity 0.1s;
+      font-family: 'Inter', sans-serif;
+      touch-action: manipulation; user-select: none;
+    }
+
+    .qty-btn.minus {
+      background: rgba(200,114,10,0.1);
+      color: #c8720a;
+      border: 2px solid rgba(200,114,10,0.35);
+    }
+
+    .qty-btn.plus {
+      background: linear-gradient(135deg, #c8720a, #e8960d);
+      color: white;
+      box-shadow: 0 4px 14px rgba(200,114,10,0.4);
+    }
+
+    .qty-btn:active { transform: scale(0.88); opacity: 0.85; }
+
+    .qty-display {
+      min-width: 60px; text-align: center;
+      font-size: 38px; font-weight: 700; color: #3d1c00;
+      font-family: 'Playfair Display', serif; line-height: 1;
+    }
+
+    /* Columna × valor */
+    .td-formula {
+      text-align: center; color: #b07030;
+      font-size: 15px; font-weight: 600; white-space: nowrap;
+      width: 90px;
+    }
+
+    .td-formula .oper { font-size: 18px; color: #c8820a; margin-right: 4px; }
+
+    /* Subtotal */
+    .td-subtotal {
+      text-align: right;
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700; color: #7a3d00;
+      width: 120px; white-space: nowrap;
+    }
+
+    /* Fila total */
+    .total-row td {
+      padding-top: 18px; padding-bottom: 6px;
+      border-top: 2.5px solid rgba(200,114,10,0.3);
+    }
+
+    .total-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #7a3d00;
+      text-align: right;
+    }
+
+    .total-value {
+      text-align: right;
+      font-family: 'Playfair Display', serif;
+      font-size: 30px; font-weight: 700;
+      background: linear-gradient(135deg,#7a3d00,#c8720a);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; white-space: nowrap;
+    }
+
+    /* ══ BOTÓN GUARDAR ══ */
+    .btn-save {
+      width: 100%; margin-top: 24px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(135deg, #c8720a, #e8960d);
+      color: white; border: none; cursor: pointer;
+      border-radius: 18px; padding: 20px;
+      font-size: 17px; font-weight: 700; font-family: 'Inter', sans-serif;
+      box-shadow: 0 6px 20px rgba(200,114,10,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+      touch-action: manipulation; letter-spacing: 0.3px;
+    }
+
+    .btn-save:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(200,114,10,0.3); }
+    .btn-save svg { width: 20px; height: 20px; fill: white; }
+
+    /* ══ GRÁFICA ══ */
+    .chart-card {
+      background: linear-gradient(160deg, #fffbf5 0%, #fff8ed 100%);
+      border-radius: 22px; padding: 26px 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,185,80,0.2);
+      position: relative; overflow: hidden; margin-bottom: 18px;
+    }
+
+    .chart-card::before {
+      content: ''; position: absolute;
+      left: 0; top: 0; bottom: 0; width: 5px;
+      background: linear-gradient(180deg,#c8720a,#e8960d,#c8720a);
+      border-radius: 22px 0 0 22px;
+    }
+
+    .chart-area { display: flex; flex-direction: column; gap: 14px; }
+
+    .chart-bar-row { display: flex; align-items: center; gap: 14px; }
+
+    .chart-denom {
+      width: 52px; font-size: 13px; font-weight: 700;
+      color: #7a3d00; text-align: right; flex-shrink: 0;
+    }
+
+    .chart-bar-bg {
+      flex: 1; height: 40px;
+      background: rgba(200,114,10,0.08); border-radius: 12px; overflow: hidden;
+    }
+
+    .chart-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #c8720a, #e8960d);
+      border-radius: 12px;
+      display: flex; align-items: center; padding-left: 12px;
+      transition: width 0.45s cubic-bezier(.4,0,.2,1); min-width: 3px;
+    }
+
+    .chart-bar-fill span {
+      font-size: 12px; font-weight: 700; color: white; white-space: nowrap;
+    }
+
+    .chart-total-label {
+      width: 76px; text-align: right;
+      font-size: 14px; font-weight: 700; color: #3d1c00; flex-shrink: 0;
+    }
+
+    /* ══ HISTORIAL ══ */
+    .history-card {
+      background: linear-gradient(160deg, #fffbf5 0%, #fff8ed 100%);
+      border-radius: 22px; padding: 26px 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,185,80,0.2);
+      position: relative; overflow: hidden;
+    }
+
+    .history-card::before {
+      content: ''; position: absolute;
+      left: 0; top: 0; bottom: 0; width: 5px;
+      background: linear-gradient(180deg,#7c3aed,#a855f7,#7c3aed);
+      border-radius: 22px 0 0 22px;
+    }
+
+    .history-card .card-title { color: #7c3aed; }
+    .history-card .card-title svg { fill: #7c3aed; }
+
+    .history-scroll { overflow-x: auto; }
+
+    .history-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+
+    .history-table th {
+      font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #7c3aed;
+      padding: 0 10px 12px 0; text-align: left; white-space: nowrap;
+    }
+
+    .history-table th:last-child,
+    .history-table td:last-child { text-align: right; padding-right: 0; }
+
+    .history-table tr { border-bottom: 1px solid rgba(124,58,237,0.1); }
+    .history-table tbody tr:last-child { border-bottom: none; }
+
+    .history-table td {
+      padding: 14px 10px 14px 0; font-size: 14px; color: #3d1c00;
+    }
+
+    .history-empty {
+      text-align: center; padding: 40px;
+      color: #b87030; font-size: 14px;
+    }
+
+    .history-total {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 700; color: #3d1c00;
+    }
+
+    .btn-edit {
+      background: none;
+      border: 1.5px solid rgba(200,114,10,0.4);
+      color: #c8720a; border-radius: 10px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-edit:active { background: rgba(200,114,10,0.08); }
+
+    .btn-delete {
+      background: none;
+      border: 1.5px solid rgba(220,50,50,0.3);
+      color: #cc3333; border-radius: 10px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-delete:active { background: rgba(220,50,50,0.08); }
+
+    /* ══ TOAST ══ */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: #3d1c00; color: #fff8ed;
+      padding: 14px 22px; border-radius: 16px;
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      transform: translateY(90px); opacity: 0;
+      transition: all 0.3s ease; z-index: 200;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .stats-row { grid-template-columns: 1fr; }
+      .td-formula { display: none; }
+      .denom-badge { font-size: 16px; min-width: 68px; }
+      .qty-btn { width: 56px; height: 56px; font-size: 24px; }
+      .qty-display { font-size: 32px; }
+      .td-subtotal { font-size: 18px; }
+    }
+
+    /* ══ MODAL EDICIÓN ══ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(20,8,0,0.75);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: linear-gradient(160deg, #fffbf5 0%, #fff8ed 100%);
+      border-radius: 24px; padding: 32px 28px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,185,80,0.25);
+      width: 100%; max-width: 560px;
+      position: relative; overflow: hidden;
+      transform: translateY(20px);
+      transition: transform 0.25s;
+    }
+
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal::before {
+      content: ''; position: absolute;
+      left: 0; top: 0; bottom: 0; width: 5px;
+      background: linear-gradient(180deg,#c8720a,#e8960d,#c8720a);
+      border-radius: 24px 0 0 24px;
+    }
+
+    .modal-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 700; color: #3d1c00; line-height: 1.3;
+    }
+
+    .modal-date {
+      font-size: 12px; color: #b07030; margin-top: 4px;
+      font-weight: 500; letter-spacing: 0.5px;
+    }
+
+    .modal-close {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(200,114,10,0.1); border: none; cursor: pointer;
+      color: #c8720a; font-size: 20px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; touch-action: manipulation;
+    }
+
+    .modal-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+
+    .modal-table tr { border-bottom: 1px solid rgba(180,100,10,0.1); }
+    .modal-table tr:last-child { border-bottom: none; }
+
+    .modal-table td { padding: 10px 0; vertical-align: middle; }
+
+    .modal-table .td-denom { width: 90px; }
+    .modal-table .td-control { text-align: center; }
+    .modal-table .td-subtotal {
+      text-align: right;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 700; color: #7a3d00;
+    }
+
+    .modal-total-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 0 20px 0;
+      border-top: 2.5px solid rgba(200,114,10,0.3);
+      margin-bottom: 4px;
+    }
+
+    .modal-total-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #7a3d00;
+    }
+
+    .modal-total-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700;
+      background: linear-gradient(135deg,#7a3d00,#c8720a);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn-modal-save {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(135deg, #c8720a, #e8960d);
+      color: white; border: none; cursor: pointer;
+      border-radius: 16px; padding: 18px;
+      font-size: 16px; font-weight: 700; font-family: 'Inter', sans-serif;
+      box-shadow: 0 6px 20px rgba(200,114,10,0.45);
+      touch-action: manipulation;
+    }
+
+    .btn-modal-save:active { opacity: 0.85; transform: scale(0.98); }
+    .btn-modal-save svg { width: 18px; height: 18px; fill: white; }
+
+    /* ══ PRINT ══ */
+    @media print {
+      body { background: white !important; padding: 12px; }
+      body::before { display: none; }
+      .btn-pdf, .btn-save, .btn-delete, .toast { display: none !important; }
+      .main-card, .chart-card, .history-card, .stat-card {
+        box-shadow: none !important; border: 1px solid #ddd; break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+      </div>
+      <div>
+        <div class="header-title">Control de Recaudación</div>
+        <div class="header-sub">Panel de Administración · Videojuegos</div>
+      </div>
+    </div>
+    <button class="btn-pdf" onclick="exportPDF()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h2v2H8v-2zm0-4h8v2H8V9zm0 8h5v2H8v-2z"/></svg>
+      Exportar PDF
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card gold">
+      <div class="stat-label">Sesión actual</div>
+      <div class="stat-value" id="stat-total">Q 0</div>
+      <div class="stat-sub" id="stat-bills">0 billetes</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Total acumulado</div>
+      <div class="stat-value" id="stat-accumulated">Q 0</div>
+      <div class="stat-sub" id="stat-sessions">0 sesiones</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Mayor recaudación</div>
+      <div class="stat-value" id="stat-max">Q 0</div>
+      <div class="stat-sub" id="stat-max-date">—</div>
+    </div>
+  </div>
+
+  <!-- Tabla Excel -->
+  <div class="main-card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/></svg>
+      Conteo de Billetes
+    </div>
+
+    <table class="excel-table">
+      <thead>
+        <tr>
+          <th style="text-align:left">Billete</th>
+          <th>Cantidad</th>
+          <th>× Valor</th>
+          <th style="text-align:right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="bill-tbody"></tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="3" class="total-label">TOTAL RECAUDADO</td>
+          <td class="total-value" id="grand-total">Q 0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <button class="btn-save" onclick="saveSession()">
+      <svg viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zm-5 16a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H5V5h10v4z"/></svg>
+      Guardar Sesión en Base de Datos
+    </button>
+  </div>
+
+  <!-- Gráfica -->
+  <div class="chart-card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" stroke="#c8820a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Distribución Visual por Denominación
+    </div>
+    <div class="chart-area" id="chart-area"></div>
+  </div>
+
+  <!-- Historial -->
+  <div class="history-card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" fill="#7c3aed"/></svg>
+      Historial de Sesiones
+    </div>
+    <div class="history-scroll">
+      <div id="history-container">
+        <p class="history-empty">No hay sesiones guardadas aún.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal edición -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Editar Sesión</div>
+        <div class="modal-date" id="modal-date-label">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <table class="modal-table" id="modal-table"></table>
+
+    <div class="modal-total-row">
+      <span class="modal-total-label">Total</span>
+      <span class="modal-total-value" id="modal-grand-total">Q 0</span>
+    </div>
+
+    <button class="btn-modal-save" onclick="saveEdit()">
+      <svg viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zm-5 16a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H5V5h10v4z"/></svg>
+      Guardar Cambios
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const DENOMS  = [100, 50, 20, 10, 5];
+  const API_URL = '/api/sesiones';
+  const counts  = { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0 };
+
+  // ── Construir tabla ──
+  function renderTable() {
+    document.getElementById('bill-tbody').innerHTML = DENOMS.map(d => `
+      <tr>
+        <td class="td-denom">
+          <span class="denom-badge">Q ${d}</span>
+        </td>
+        <td class="td-control">
+          <div class="qty-control">
+            <button class="qty-btn minus" onclick="change(${d},-1)">−</button>
+            <div class="qty-display" id="qty-${d}">0</div>
+            <button class="qty-btn plus"  onclick="change(${d},+1)">+</button>
+          </div>
+        </td>
+        <td class="td-formula">
+          <span class="oper">×</span> Q ${d}
+        </td>
+        <td class="td-subtotal" id="sub-${d}">Q 0</td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Sumar / restar ──
+  function change(denom, delta) {
+    counts[denom] = Math.max(0, counts[denom] + delta);
+    document.getElementById(`qty-${denom}`).textContent = counts[denom];
+    update();
+  }
+
+  // ── Recalcular todo ──
+  function update() {
+    let grand = 0, totalBills = 0;
+    const subs = {};
+
+    DENOMS.forEach(d => {
+      const sub = counts[d] * d;
+      subs[d] = sub;
+      grand   += sub;
+      totalBills += counts[d];
+      document.getElementById(`sub-${d}`).textContent =
+        sub === 0 ? 'Q 0' : `Q ${sub.toLocaleString()}`;
+    });
+
+    document.getElementById('grand-total').textContent  = `Q ${grand.toLocaleString()}`;
+    document.getElementById('stat-total').textContent   = `Q ${grand.toLocaleString()}`;
+    document.getElementById('stat-bills').textContent   =
+      `${totalBills} billete${totalBills !== 1 ? 's' : ''}`;
+
+    renderChart(subs);
+  }
+
+  // ── Gráfica ──
+  function renderChart(subs) {
+    const maxVal = Math.max(...Object.values(subs), 1);
+    document.getElementById('chart-area').innerHTML = DENOMS.map(d => {
+      const pct = Math.round((subs[d] / maxVal) * 100);
+      return `
+        <div class="chart-bar-row">
+          <div class="chart-denom">Q ${d}</div>
+          <div class="chart-bar-bg">
+            <div class="chart-bar-fill" style="width:${pct}%">
+              ${pct > 10 ? `<span>${counts[d]} bill.</span>` : ''}
+            </div>
+          </div>
+          <div class="chart-total-label">Q ${subs[d].toLocaleString()}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── Guardar sesión ──
+  async function saveSession() {
+    const billetes = {};
+    let total = 0, totalBills = 0;
+
+    DENOMS.forEach(d => {
+      billetes[d]  = counts[d];
+      total       += counts[d] * d;
+      totalBills  += counts[d];
+    });
+
+    if (total === 0) { showToast('Agrega al menos un billete.'); return; }
+
+    const now = new Date();
+    const session = {
+      id:         now.getTime(),
+      fecha:      now.toLocaleDateString('es-GT', { day:'2-digit', month:'short', year:'numeric' }),
+      hora:       now.toLocaleTimeString('es-GT', { hour:'2-digit', minute:'2-digit' }),
+      billetes,
+      total,
+      totalBills
+    };
+
+    try {
+      const res = await fetch(API_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(session)
+      });
+      if (!res.ok) throw new Error();
+
+      DENOMS.forEach(d => {
+        counts[d] = 0;
+        document.getElementById(`qty-${d}`).textContent = 0;
+      });
+      update();
+      await loadAndRender();
+      showToast('Sesión guardada correctamente.');
+    } catch {
+      showToast('Error: verifica que el servidor esté activo.');
+    }
+  }
+
+  // ── API: obtener sesiones ──
+  async function getSessions() {
+    try {
+      const res = await fetch(API_URL);
+      return res.ok ? await res.json() : [];
+    } catch { return []; }
+  }
+
+  // ── Renderizar historial ──
+  function renderHistory(sessions) {
+    const container = document.getElementById('history-container');
+    if (sessions.length === 0) {
+      container.innerHTML = '<p class="history-empty">No hay sesiones guardadas aún.</p>';
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Fecha</th><th>Hora</th>
+            <th>Q100</th><th>Q50</th><th>Q20</th><th>Q10</th><th>Q5</th>
+            <th>Billetes</th><th>Total</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sessions.map(s => `
+            <tr>
+              <td>${s.fecha}</td>
+              <td style="color:#9a6030">${s.hora}</td>
+              <td>${s.billetes[100]||0}</td>
+              <td>${s.billetes[50] ||0}</td>
+              <td>${s.billetes[20] ||0}</td>
+              <td>${s.billetes[10] ||0}</td>
+              <td>${s.billetes[5]  ||0}</td>
+              <td>${s.totalBills}</td>
+              <td class="history-total">Q ${s.total.toLocaleString()}</td>
+              <td style="display:flex;gap:6px;justify-content:flex-end">
+                <button class="btn-edit"   onclick='openModal(${JSON.stringify(s)})'>Editar</button>
+                <button class="btn-delete" onclick="deleteSession(${s.id})">Eliminar</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // ── Eliminar sesión ──
+  async function deleteSession(id) {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      await loadAndRender();
+      showToast('Sesión eliminada.');
+    } catch {
+      showToast('Error al eliminar.');
+    }
+  }
+
+  // ── Stats globales ──
+  function updateGlobalStats(sessions) {
+    const acc = sessions.reduce((a, s) => a + s.total, 0);
+    const max = sessions.reduce((a, s) => s.total > a.total ? s : a, { total: 0, fecha: '—' });
+
+    document.getElementById('stat-accumulated').textContent = `Q ${acc.toLocaleString()}`;
+    document.getElementById('stat-sessions').textContent =
+      `${sessions.length} sesión${sessions.length !== 1 ? 'es' : ''}`;
+    document.getElementById('stat-max').textContent      = `Q ${max.total.toLocaleString()}`;
+    document.getElementById('stat-max-date').textContent = max.fecha || '—';
+  }
+
+  // ── Cargar y renderizar ──
+  async function loadAndRender() {
+    const sessions = await getSessions();
+    renderHistory(sessions);
+    updateGlobalStats(sessions);
+  }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── PDF ──
+  function exportPDF() { window.print(); }
+
+  // ══════════════════════════════
+  //  MODAL EDICIÓN
+  // ══════════════════════════════
+  let editSession = null;
+  const editCounts = { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0 };
+
+  function openModal(session) {
+    editSession = session;
+    DENOMS.forEach(d => { editCounts[d] = session.billetes[d] || 0; });
+
+    document.getElementById('modal-date-label').textContent =
+      `${session.fecha}  ·  ${session.hora}`;
+
+    renderModalTable();
+    updateModal();
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    editSession = null;
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  function renderModalTable() {
+    document.getElementById('modal-table').innerHTML = DENOMS.map(d => `
+      <tr>
+        <td class="td-denom">
+          <span class="denom-badge" style="font-size:16px;min-width:70px">Q ${d}</span>
+        </td>
+        <td class="td-control">
+          <div class="qty-control">
+            <button class="qty-btn minus" onclick="editChange(${d},-1)">−</button>
+            <div class="qty-display" id="eq-${d}" style="font-size:34px;min-width:52px">
+              ${editCounts[d]}
+            </div>
+            <button class="qty-btn plus" onclick="editChange(${d},+1)">+</button>
+          </div>
+        </td>
+        <td class="td-subtotal" id="esub-${d}">Q ${(editCounts[d]*d).toLocaleString()}</td>
+      </tr>
+    `).join('');
+  }
+
+  function editChange(denom, delta) {
+    editCounts[denom] = Math.max(0, editCounts[denom] + delta);
+    document.getElementById(`eq-${denom}`).textContent   = editCounts[denom];
+    document.getElementById(`esub-${denom}`).textContent =
+      `Q ${(editCounts[denom] * denom).toLocaleString()}`;
+    updateModal();
+  }
+
+  function updateModal() {
+    let grand = 0, totalBills = 0;
+    DENOMS.forEach(d => {
+      grand      += editCounts[d] * d;
+      totalBills += editCounts[d];
+    });
+    document.getElementById('modal-grand-total').textContent = `Q ${grand.toLocaleString()}`;
+  }
+
+  async function saveEdit() {
+    if (!editSession) return;
+
+    const billetes = { ...editCounts };
+    let total = 0, totalBills = 0;
+    DENOMS.forEach(d => { total += editCounts[d] * d; totalBills += editCounts[d]; });
+
+    try {
+      const res = await fetch(`${API_URL}/${editSession.id}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ billetes, totalBills, total })
+      });
+      if (!res.ok) throw new Error();
+      closeModal();
+      await loadAndRender();
+      showToast('Sesión actualizada correctamente.');
+    } catch {
+      showToast('Error al actualizar. Verifica que el servidor esté activo.');
+    }
+  }
+
+  // ── Init ──
+  renderTable();
+  update();
+  loadAndRender();
+</script>
+</body>
+</html>
